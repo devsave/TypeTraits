@@ -3,11 +3,11 @@
 using namespace std;
 
 // Possible Implementation:
-template<class T, class U>
-struct is_same : std::false_type{};
-
-template<class T>
-struct is_same<T, T>: std::true_type{};
+// template<class T, class U>
+// struct is_same : std::false_type{};
+// 
+// template<class T>
+// struct is_same<T, T>: std::true_type{};
 
 typedef int Integer1;
 using Integer2 = int;

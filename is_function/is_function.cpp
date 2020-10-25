@@ -65,11 +65,8 @@ using namespace std;
 //template<class Fn, class... Args>
 //struct is_function<Fn(Args......) const volatile &&> : std::true_type {};
 
-int func1() { return 0; }
-int(*func2)() = func1;
-int(*func3(int))(char) { return nullptr; }
 
-class A 
+class A
 {
 private:
     void operator() (int) {}
@@ -78,46 +75,56 @@ private:
 class B
 {
 public:
-    void(* func(char)) (int){}
+    void(*func(char)) (int) {}
 };
 
 class C
 {
 public:
-    void func(){}
+    void func1() {}
+    static void func2() {}
 };
 
 template<typename>
-struct PM_traits{};
+struct PM_traits {};
 
 template<class T, class U>
 struct PM_traits<U T::*> {
     using member_func = U;
 };
 
-
 int main()
 {
-//     cout << "int(char):" << std::is_function<int(char)>::value << endl;
-//     cout << "decltype(func1):" << std::is_function<decltype(func1)>::value << endl;
-//     cout << "decltype((func1)):" << std::is_function<decltype((func1))>::value << endl;
-// 
-//     cout << "decltype(func2):" << std::is_function<decltype(func2)>::value << endl;
-//     cout << "decltype(*func2):" << std::is_function<decltype(*func2)>::value << endl;
-//     cout << "decltype(func3(0)):" << std::is_function<decltype(func3(0))>::value << endl;
-//     cout << "std::function<int(char)>:" << std::is_function<std::function<int(char)>>::value << endl;
-//     auto lambda = [](int) {};
-//     cout << "decltype(lambda):" << std::is_function <decltype(lambda)> ::value << endl;
-//     cout << "A" << std::is_function<A>::value << endl;
-//     B b;
-//     cout << "decltype(b.func('a')):" << std::is_function<decltype(b.func('a'))>::value << endl;
-//     C c;
-//     cout << "decltype(&C::func):" << std::is_function<decltype(c.func)>::value << endl;
-//     cout << "decltype(&C::func):" << std::is_function<decltype(&C::func)>::value << endl;
-//     cout << "PM_traits<decltype(&C::func)>::member_func:" << std::is_function<PM_traits<decltype(&C::func)>::member_func>::value << endl;
-// 
-//     const type_info& t1 = typeid(decltype(func1));
-//     const type_info& t2 = typeid(decltype(func2));
-// 
+    {
+        int func1();                // general function
+        int(*func2)() = func1;      // method pointer
+        int(*func3(int))(char);     // method to return a method pointer
+
+        static_assert(std::is_function<int(char)>::value, "");              // true
+        static_assert(std::is_function<decltype(func1)>::value, "");        // true
+        static_assert(!std::is_function<decltype(func2)>::value, "");       // false
+        static_assert(!std::is_function<decltype(func3(0))>::value, "");    // false
+    }
+
+    {
+        static_assert(!std::is_function<A>::value, "");                     // false
+        B b;
+        static_assert(!std::is_function<decltype(b.func('a'))>::value, ""); // false
+        C c;
+        static_assert(!std::is_function<decltype(&c.func1)>::value, "");    // false
+        static_assert(std::is_function<decltype(C::func2)>::value, "");     // true
+        static_assert(std::is_function<PM_traits<decltype(&C::func1)>::member_func>::value, "");    // true
+        static_assert(!std::is_function < decltype(std::mem_fn(&C::func1))>::value, "");    //false
+    }
+
+    {
+        auto lambda = [](int) {};
+        static_assert(!std::is_function <decltype(lambda)> ::value, "");    // false
+    }
+
+    {
+        static_assert(!std::is_function <std::function<int()>> ::value, "");// false
+    }
+
     system("PAUSE");
 }
